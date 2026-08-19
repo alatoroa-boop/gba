@@ -1,0 +1,26 @@
+name: Compilar ROM de GBA
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: devkitpro/devkitarm
+    steps:
+      - name: Descargar codigo fuente
+        uses: actions/checkout@v4
+
+      - name: Compilar codigo C++ a ROM (.gba)
+        run: |
+          arm-none-eabi-g++ -mthumb -mthumb-interwork -O2 -specs=gba.specs Mario -o mario.elf
+          arm-none-eabi-objcopy -O binary mario.elf mario.gba
+          gbafix mario.gba
+
+      - name: Guardar archivo .gba generado
+        uses: actions/upload-artifact@v4
+        with:
+          name: mario-gba-rom
+          path: mario.gba
